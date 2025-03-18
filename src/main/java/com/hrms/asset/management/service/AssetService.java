@@ -2,12 +2,8 @@ package com.hrms.asset.management.service;
 
 import java.time.LocalDate;
 import java.util.List;
-
-import javax.management.RuntimeErrorException;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
 import com.hrms.asset.management.dao.Asset;
 import com.hrms.asset.management.dao.AssetAllocation;
 import com.hrms.asset.management.dao.AssetClaim;
@@ -16,12 +12,10 @@ import com.hrms.asset.management.repo.AssetClaimRepository;
 import com.hrms.asset.management.repo.AssetRepository;
 import com.hrms.asset.management.request.AssetClaimRequest;
 import com.hrms.asset.management.request.AssetRequest;
-import com.hrms.asset.management.response.ApiResponse;
 import com.hrms.asset.management.response.AssetClaimResponse;
 import com.hrms.asset.management.response.AssetResponse;
 import com.hrms.asset.management.utility.AssetClaimMapper;
 import com.hrms.asset.management.utility.AssetMapper;
-
 import jakarta.transaction.Transactional;
 
 @Service
@@ -49,12 +43,12 @@ public class AssetService {
             assetRepository.save(asset);
             return assetMapper.convertToResponse(asset);
         } catch (Exception e) {
-            throw new RuntimeErrorException(null, "Error in saving asset");
+            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
         }
     }
 
     @Transactional
-    public ApiResponse allocateAsset(Long assetId, Long employeeId) {
+    public void allocateAsset(Long assetId, Long employeeId) {
 
         try {
             Asset asset = assetRepository.findById(assetId).get();
@@ -66,9 +60,9 @@ public class AssetService {
             asset.setAssigned(true);
             asset.setAssetAllocation(assetAllocation);
             assetRepository.save(asset);
-            return new ApiResponse("Asset allocated successfully", true);
+            
         } catch (Exception e) {
-            throw new RuntimeErrorException(null, "Error in allocating asset");
+            throw new RuntimeException("Error in allocating asset: "+ e.getMessage(),e);
         }
 
     }
@@ -84,7 +78,7 @@ public class AssetService {
             assetRepository.save(assetData);
             return assetMapper.convertToResponse(assetData);
         } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset",e);
+            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
         }
     }
 
@@ -93,7 +87,7 @@ public class AssetService {
             List<Asset> assets = assetRepository.findByIsAssigned(true);
             return assetMapper.convertToResponse(assets);
         } catch (Exception e) {
-            throw new RuntimeException( "Error in fetching all assigned assets",e);
+            throw new RuntimeException( "Error in fetching all assigned assets: "+ e.getMessage(),e);
         }
 
     }
@@ -104,7 +98,7 @@ public class AssetService {
             List<Asset> assets = assetRepository.findByIsAssigned(false);
             return assetMapper.convertToResponse(assets);
         } catch (Exception e) {
-            throw new RuntimeException( "Error in fetching all unassigned assets",e);
+            throw new RuntimeException( "Error in fetching all unassigned assets: "+ e.getMessage(),e);
         }
 
     }
@@ -118,7 +112,7 @@ public class AssetService {
             assetRepository.save(assetData);
             return assetMapper.convertToResponse(assetData);
         } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset",e);
+            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
         }
     }
 
@@ -141,7 +135,7 @@ public class AssetService {
             List<AssetClaim> assetClaims = assetClaimRepository.findAllByEmployeeId(employeeId);
             return assetClaimMapper.convertToResponse(assetClaims);
         } catch (Exception e) {
-            throw new RuntimeException("Error in fetching all claimed assets",e);
+            throw new RuntimeException("Error in fetching all claimed assets: "+ e.getMessage(),e);
         }
     }
 

@@ -12,95 +12,69 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 import com.hrms.asset.management.request.AssetClaimRequest;
 import com.hrms.asset.management.request.AssetRequest;
-import com.hrms.asset.management.response.ApiResponse;
 import com.hrms.asset.management.response.AssetClaimResponse;
 import com.hrms.asset.management.response.AssetResponse;
 import com.hrms.asset.management.service.AssetService;
 
 @RestController
-@RequestMapping("/api/asset")
+@RequestMapping("/asset")
 public class AssetController {
 
     @Autowired
     private AssetService assetService;
 
-    /* Asset  */
-    @PostMapping("/")
+    /* Asset */
+    @PostMapping
     public ResponseEntity<AssetResponse> addAsset(@Valid @RequestBody AssetRequest assetRequest) {
-
-        try {
-            AssetResponse assetResponse = assetService.addAsset(assetRequest);
-            if (assetResponse != null) {
-                return ResponseEntity.ok(assetResponse);
-            }
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().build();
-        }
-
-        return ResponseEntity.badRequest().build();
+        AssetResponse asset = assetService.addAsset(assetRequest);
+        return ResponseEntity.status(HttpStatus.CREATED).body(asset);
     }
 
-    @PutMapping("/")
+    @PutMapping
     public ResponseEntity<AssetResponse> updateAsset(@Valid @RequestBody AssetRequest assetRequest) {
 
-        AssetResponse assetResponse = assetService.updateAsset(assetRequest);
-        if (assetResponse != null) {
-            return ResponseEntity.ok(assetResponse);
-        }
-        return ResponseEntity.badRequest().build();
+        AssetResponse updatedAsset = assetService.updateAsset(assetRequest);
+
+        return ResponseEntity.status(HttpStatus.OK).body(updatedAsset);
+
     }
 
     @GetMapping("/assigned")
     public ResponseEntity<List<AssetResponse>> getAllAssignedAsset() {
 
-        try {
-            List<AssetResponse> assetResponse = assetService.getAllAssignedAsset();
-            if (assetResponse != null) {
-                return ResponseEntity.ok(assetResponse);
-            }
-
-        } catch (Exception e) {
+        List<AssetResponse> assetResponse = assetService.getAllAssignedAsset();
+        if (assetResponse != null) {
+            return ResponseEntity.ok(assetResponse);
+        } else {
             return ResponseEntity.notFound().build();
         }
-
-        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/unassigned")
     public ResponseEntity<List<AssetResponse>> getAllUnassignedAsset() {
 
-        try {
-            List<AssetResponse> assetResponse = assetService.getAllUnassignedAsset();
-            if (assetResponse != null) {
-                return ResponseEntity.ok(assetResponse);
-            }
-        } catch (Exception e) {
+        List<AssetResponse> assetResponse = assetService.getAllUnassignedAsset();
+        if (assetResponse != null) {
+            return ResponseEntity.ok(assetResponse);
+        } else {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.badRequest().build();
     }
 
     /* Asset Allocation */
 
     @PostMapping("/allocation")
-    public ResponseEntity<ApiResponse> allocateAsset(@Valid @RequestParam Long assetId,
+    public ResponseEntity<?> allocateAsset(@Valid @RequestParam Long assetId,
             @Valid @RequestParam Long employeeId) {
 
-        try {
-            ApiResponse apiResponse = assetService.allocateAsset(assetId, employeeId);
-            if (apiResponse.isStatus()) {
-                return ResponseEntity.ok(apiResponse);
-            }
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
+        assetService.allocateAsset(assetId, employeeId);
+        return ResponseEntity.status(HttpStatus.CREATED).build();
 
-        return ResponseEntity.badRequest().build();
     }
-
 
     /* Retire damaged Asset */
 
@@ -108,43 +82,29 @@ public class AssetController {
     public ResponseEntity<AssetResponse> updateAssetStatus(@Valid @RequestBody AssetRequest assetRequest) {
 
         AssetResponse assetResponse = assetService.updateAssetStatus(assetRequest);
-        if (assetResponse != null) {
-            return ResponseEntity.ok(assetResponse);
-        }
-        return ResponseEntity.badRequest().build();
+        return ResponseEntity.status(HttpStatus.OK).body(assetResponse);
+
     }
 
-   
-    /* Asset Claim  */
+    /* Asset Claim */
 
     @PostMapping("/claim")
     public ResponseEntity<AssetClaimResponse> claimAsset(@Valid @RequestBody AssetClaimRequest assetClaimRequest) {
 
-        try {
-            AssetClaimResponse assetRespone = assetService.claimAsset(assetClaimRequest);
-            if (assetRespone != null) {
-                return ResponseEntity.ok(assetRespone);
-            }
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            return ResponseEntity.badRequest().build();
-        }
+        AssetClaimResponse assetRespone = assetService.claimAsset(assetClaimRequest);
+        return ResponseEntity.status(HttpStatus.OK).body(assetRespone);
 
-        return ResponseEntity.badRequest().build();
     }
 
     @GetMapping("/claim")
     public ResponseEntity<List<AssetClaimResponse>> getAllClaimedAsset(@RequestParam Long employeeId) {
 
-        try {
-            List<AssetClaimResponse> assetResponse = assetService.getAllClaimedAsset(employeeId);
-            if (assetResponse != null) {
-                return ResponseEntity.ok(assetResponse);
-            }
-        } catch (Exception e) {
+        List<AssetClaimResponse> assetResponse = assetService.getAllClaimedAsset(employeeId);
+        if (assetResponse != null) {
+            return ResponseEntity.ok(assetResponse);
+        } else {
             return ResponseEntity.notFound().build();
         }
 
-        return ResponseEntity.badRequest().build();
     }
 }
