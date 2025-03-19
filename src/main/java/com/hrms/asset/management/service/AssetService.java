@@ -43,7 +43,7 @@ public class AssetService {
             assetRepository.save(asset);
             return assetMapper.convertToResponse(asset);
         } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
     }
 
@@ -60,9 +60,9 @@ public class AssetService {
             asset.setAssigned(true);
             asset.setAssetAllocation(assetAllocation);
             assetRepository.save(asset);
-            
+
         } catch (Exception e) {
-            throw new RuntimeException("Error in allocating asset: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in allocating asset: " + e.getMessage(), e);
         }
 
     }
@@ -78,16 +78,16 @@ public class AssetService {
             assetRepository.save(assetData);
             return assetMapper.convertToResponse(assetData);
         } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
     }
 
     public List<AssetResponse> getAllAssignedAsset() {
         try {
-            List<Asset> assets = assetRepository.findByIsAssigned(true);
+            List<Asset> assets = assetRepository.findByIsAssignedAndActiveTrue(true);
             return assetMapper.convertToResponse(assets);
         } catch (Exception e) {
-            throw new RuntimeException( "Error in fetching all assigned assets: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in fetching all assigned assets: " + e.getMessage(), e);
         }
 
     }
@@ -95,28 +95,25 @@ public class AssetService {
     public List<AssetResponse> getAllUnassignedAsset() {
 
         try {
-            List<Asset> assets = assetRepository.findByIsAssigned(false);
+            List<Asset> assets = assetRepository.findByIsAssignedAndActiveTrue(false);
             return assetMapper.convertToResponse(assets);
         } catch (Exception e) {
-            throw new RuntimeException( "Error in fetching all unassigned assets: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in fetching all unassigned assets: " + e.getMessage(), e);
         }
 
     }
 
-    public AssetResponse updateAssetStatus(AssetRequest assetRequest) {
-
+    public AssetResponse retireAsset(Long assetId, Boolean iaActive) {
         try {
-            Asset asset = assetMapper.convertToEntity(assetRequest);
-            Asset assetData = assetRepository.findById(asset.getId()).get();
-            assetData.setIsActive(asset.getIsActive());
-            assetRepository.save(assetData);
-            return assetMapper.convertToResponse(assetData);
+            Asset asset = assetRepository.findById(assetId).get();
+            asset.setIsActive(iaActive);
+            assetRepository.save(asset);
+            return assetMapper.convertToResponse(asset);
         } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
     }
 
-   
     public AssetClaimResponse claimAsset(AssetClaimRequest assetClaimRequest) {
         try {
             AssetClaim assetClaim = assetClaimMapper.convertToEntity(assetClaimRequest);
@@ -126,7 +123,7 @@ public class AssetService {
             assetClaimRepository.save(assetClaim);
             return assetClaimMapper.convertToResponse(assetClaim);
         } catch (Exception e) {
-          throw new RuntimeException("Error in saving asset claim: " + e.getMessage(), e);
+            throw new RuntimeException("Error in saving asset claim: " + e.getMessage(), e);
         }
     }
 
@@ -135,7 +132,7 @@ public class AssetService {
             List<AssetClaim> assetClaims = assetClaimRepository.findAllByEmployeeId(employeeId);
             return assetClaimMapper.convertToResponse(assetClaims);
         } catch (Exception e) {
-            throw new RuntimeException("Error in fetching all claimed assets: "+ e.getMessage(),e);
+            throw new RuntimeException("Error in fetching all claimed assets: " + e.getMessage(), e);
         }
     }
 

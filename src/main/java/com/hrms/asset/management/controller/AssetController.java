@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -78,10 +79,10 @@ public class AssetController {
 
     /* Retire damaged Asset */
 
-    @PatchMapping("/retire")
-    public ResponseEntity<AssetResponse> updateAssetStatus(@Valid @RequestBody AssetRequest assetRequest) {
+    @PatchMapping("/retire/{id}")
+    public ResponseEntity<AssetResponse> retireAsset(@PathVariable Long assetId, @RequestParam Boolean isAactive) {
 
-        AssetResponse assetResponse = assetService.updateAssetStatus(assetRequest);
+        AssetResponse assetResponse = assetService.retireAsset(assetId, isAactive);
         return ResponseEntity.status(HttpStatus.OK).body(assetResponse);
 
     }
