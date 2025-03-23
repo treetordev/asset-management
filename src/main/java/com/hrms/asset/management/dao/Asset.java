@@ -1,5 +1,6 @@
 package com.hrms.asset.management.dao;
 
+import java.time.LocalDate;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -10,20 +11,37 @@ public class Asset {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    @Column(nullable = false, length = 100)
+    
+    private String assetCode;
     private String name;
-    @Column(nullable = false, length = 50)
     private String type;
-    @Column(unique = true, nullable = false,length = 100)
+    private String status;
     private String serialNumber;
-   // private String assetStatus;
-    private boolean isAssigned=false;
-    private Boolean isActive=true;
-    // private String retirementDate;
+    private LocalDate retirementDate;
+    private Boolean isActive;
 
-    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.EAGER)
-    @JoinColumn(name = "asset_allocation_id", nullable = true)
-    private AssetAllocation assetAllocation;
+    private LocalDate returnDate;
+    private String returnDescription;
 
+    private LocalDate allocationDate;
+    private LocalDate reportDate;
+    private String reportDescription;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "assigned_employee_id")
+    private Employee assignedEmployee;
+
+    @Column(updatable = false)
+    private LocalDate createdAt;
+    private LocalDate updatedAt;
+
+    @PrePersist
+    protected void onCreate() {
+        this.createdAt = LocalDate.now();
+    }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = LocalDate.now();
+    }
 }

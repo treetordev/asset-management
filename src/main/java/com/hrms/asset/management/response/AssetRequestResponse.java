@@ -1,15 +1,19 @@
 package com.hrms.asset.management.response;
 
+import java.time.LocalDate;
+
+import com.hrms.asset.management.dao.Asset;
+
 import lombok.Data;
 
 @Data
-public class AssetClaimResponse {
+public class AssetRequestResponse {
 
     private Long id;
     private Long employeeId;
-    private String assetType;
+    private Asset asset;
     private String comment;
-    private String claimDate;
+    private LocalDate date;
     private String reason;
     
 }

@@ -7,7 +7,7 @@ import com.hrms.asset.management.dao.Employee;
 import lombok.Data;
 
 @Data
-public class AssetAllocationResponse {
+public class AssetReportResponse {
 
     private Long id;
     private String assetCode;
@@ -17,6 +17,8 @@ public class AssetAllocationResponse {
     private String serialNumber;
     private LocalDate retirementDate;
     private LocalDate allocationDate;
+    private LocalDate reportingDate;
+    private String reportingDescription;
     private Employee assignedEmployeeId;
     private LocalDate createdAt;
     private LocalDate updatedAt;

@@ -1,22 +1,32 @@
 package com.hrms.asset.management.service;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
 import com.hrms.asset.management.dao.Asset;
-import com.hrms.asset.management.dao.AssetAllocation;
-import com.hrms.asset.management.dao.AssetClaim;
-import com.hrms.asset.management.repo.AssetAllocationRepository;
-import com.hrms.asset.management.repo.AssetClaimRepository;
+import com.hrms.asset.management.dao.Employee;
+import com.hrms.asset.management.dao.RequestedAsset;
 import com.hrms.asset.management.repo.AssetRepository;
-import com.hrms.asset.management.request.AssetClaimRequest;
+import com.hrms.asset.management.repo.EmployeeRepository;
+import com.hrms.asset.management.repo.RequestedAssetRepository;
+import com.hrms.asset.management.request.AssetAllocationRequest;
+import com.hrms.asset.management.request.AssetReportRequest;
 import com.hrms.asset.management.request.AssetRequest;
-import com.hrms.asset.management.response.AssetClaimResponse;
+import com.hrms.asset.management.request.AssetRequestSubmission;
+import com.hrms.asset.management.request.AssetReturnRequest;
+import com.hrms.asset.management.response.AssetAllocationResponse;
+import com.hrms.asset.management.response.AssetReportResponse;
+import com.hrms.asset.management.response.AssetRequestResponse;
 import com.hrms.asset.management.response.AssetResponse;
-import com.hrms.asset.management.utility.AssetClaimMapper;
+import com.hrms.asset.management.response.AssetReturnResponse;
 import com.hrms.asset.management.utility.AssetMapper;
-import jakarta.transaction.Transactional;
+import com.hrms.asset.management.utility.AssetRequestMapper;
 
 @Service
 public class AssetService {
@@ -25,115 +35,162 @@ public class AssetService {
     private AssetRepository assetRepository;
 
     @Autowired
-    private AssetAllocationRepository assetAllocationRepository;
+    private RequestedAssetRepository assetClaimRepository;
+
+    @Autowired
+    private EmployeeRepository employeeRepository;
 
     @Autowired
     private AssetMapper assetMapper;
 
     @Autowired
-    private AssetClaimRepository assetClaimRepository;
-
-    @Autowired
-    private AssetClaimMapper assetClaimMapper;
+    private AssetRequestMapper assetClaimMapper;
 
     public AssetResponse addAsset(AssetRequest assetRequest) {
 
         try {
             Asset asset = assetMapper.convertToEntity(assetRequest);
-            assetRepository.save(asset);
-            return assetMapper.convertToResponse(asset);
+            Asset savedAsset = assetRepository.save(asset);
+            asset.setStatus("Unassigned");
+            return assetMapper.convertToResponse(savedAsset);
         } catch (Exception e) {
             throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
     }
 
-    @Transactional
-    public void allocateAsset(Long assetId, Long employeeId) {
+    public AssetResponse updateAsset(Long id, AssetRequest assetRequest) {
 
         try {
-            Asset asset = assetRepository.findById(assetId).get();
-            AssetAllocation assetAllocation = new AssetAllocation();
-            assetAllocation.setEmployeeId(employeeId);
-            assetAllocation.setAllocationDate(LocalDate.now());
-            assetAllocationRepository.save(assetAllocation);
-
-            asset.setAssigned(true);
-            asset.setAssetAllocation(assetAllocation);
-            assetRepository.save(asset);
-
-        } catch (Exception e) {
-            throw new RuntimeException("Error in allocating asset: " + e.getMessage(), e);
-        }
-
-    }
-
-    public AssetResponse updateAsset(AssetRequest assetRequest) {
-
-        try {
+            Asset existingAsset = assetRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
             Asset asset = assetMapper.convertToEntity(assetRequest);
-            Asset assetData = assetRepository.findById(asset.getId()).get();
-            assetData.setName(asset.getName());
-            assetData.setType(asset.getType());
-            assetData.setSerialNumber(asset.getSerialNumber());
-            assetRepository.save(assetData);
-            return assetMapper.convertToResponse(assetData);
+
+            copyNonNullProperties(asset, existingAsset);
+
+            Asset updateAsset = assetRepository.save(existingAsset);
+            return assetMapper.convertToResponse(updateAsset);
         } catch (Exception e) {
             throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
     }
 
-    public List<AssetResponse> getAllAssignedAsset() {
+    public AssetAllocationResponse allocateAsset(Long id, AssetAllocationRequest assetRequest) {
+
         try {
-            List<Asset> assets = assetRepository.findByIsAssignedAndActiveTrue(true);
-            return assetMapper.convertToResponse(assets);
+            Asset existingAsset = assetRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
+
+            Employee employee = employeeRepository.findById(assetRequest.getEmployeeId())
+                    .orElseThrow(
+                            () -> new RuntimeException("Employee not found with ID: " + assetRequest.getEmployeeId()));
+
+            existingAsset.setAssignedEmployee(employee);
+            existingAsset.setStatus("Assigned");
+            existingAsset.setAllocationDate(assetRequest.getAllocationDate());
+
+            Asset updateAsset = assetRepository.save(existingAsset);
+            return assetMapper.convertToAllocationResponse(updateAsset);
+        } catch (Exception e) {
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
+        }
+    }
+
+    public AssetReportResponse reportAsset(Long id, AssetReportRequest assetReportRequest) {
+
+        try {
+            Asset existingAsset = assetRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
+
+            existingAsset.setReportDate(assetReportRequest.getReportingDate());
+            existingAsset.setReportDescription(assetReportRequest.getReportingDescription());
+            existingAsset.setStatus(assetReportRequest.getStatus());
+
+            Asset updateAsset = assetRepository.save(existingAsset);
+            return assetMapper.convertToReportResponse(updateAsset);
+        } catch (Exception e) {
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
+        }
+    }
+
+    public AssetReturnResponse returnAsset(Long id, AssetReturnRequest assetRequest) {
+
+        try {
+            Asset existingAsset = assetRepository.findById(id)
+                    .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
+            existingAsset.setAssignedEmployee(null);
+            existingAsset.setStatus(assetRequest.getStatus());
+            existingAsset.setAllocationDate(null);
+            Asset updateAsset = assetRepository.save(existingAsset);
+            return assetMapper.convertToReturnResponse(updateAsset);
+        } catch (Exception e) {
+            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
+        }
+    }
+
+    public List<AssetResponse> getAllAsset(String status, String assetType) {
+        try {
+            Specification<Asset> spec = Specification.where(null);
+            if (status != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("status"), status));
+            }
+            // if (status.equals("unassigned")) {
+            // spec = spec.and((root, query, cb) -> cb.equal(root.get("isAllocated"),
+            // false));
+            // }
+            if (assetType != null) {
+                spec = spec.and((root, query, cb) -> cb.equal(root.get("type"), assetType));
+            }
+            return assetRepository.findAll(spec).stream().map(assetMapper::convertToResponse)
+                    .collect(Collectors.toList());
+
         } catch (Exception e) {
             throw new RuntimeException("Error in fetching all assigned assets: " + e.getMessage(), e);
         }
 
     }
 
-    public List<AssetResponse> getAllUnassignedAsset() {
-
+    public AssetRequestResponse requestAsset(Long employeeId, AssetRequestSubmission assetClaimRequest) {
         try {
-            List<Asset> assets = assetRepository.findByIsAssignedAndActiveTrue(false);
-            return assetMapper.convertToResponse(assets);
+            RequestedAsset requestedAsset = assetClaimMapper.convertToEntity(assetClaimRequest);
+            requestedAsset.setEmployeeId(employeeId);
+            requestedAsset.setStatus("Pending");
+            requestedAsset.setDate(LocalDate.now());
+            assetClaimRepository.save(requestedAsset);
+            return assetClaimMapper.convertToResponse(requestedAsset);
         } catch (Exception e) {
-            throw new RuntimeException("Error in fetching all unassigned assets: " + e.getMessage(), e);
-        }
-
-    }
-
-    public AssetResponse retireAsset(Long assetId, Boolean iaActive) {
-        try {
-            Asset asset = assetRepository.findById(assetId).get();
-            asset.setIsActive(iaActive);
-            assetRepository.save(asset);
-            return assetMapper.convertToResponse(asset);
-        } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
+            throw new RuntimeException("Error in saving asset request: " + e.getMessage(), e);
         }
     }
 
-    public AssetClaimResponse claimAsset(AssetClaimRequest assetClaimRequest) {
+    // Assigned and Unassigned field we have to add there to fetch data
+    public List<AssetRequestResponse> getAllRequestedAsset(Long employeeId) {
         try {
-            AssetClaim assetClaim = assetClaimMapper.convertToEntity(assetClaimRequest);
-
-            assetClaim.setStatus("Pending");
-            assetClaim.setClaimDate(LocalDate.now());
-            assetClaimRepository.save(assetClaim);
-            return assetClaimMapper.convertToResponse(assetClaim);
-        } catch (Exception e) {
-            throw new RuntimeException("Error in saving asset claim: " + e.getMessage(), e);
-        }
-    }
-
-    public List<AssetClaimResponse> getAllClaimedAsset(Long employeeId) {
-        try {
-            List<AssetClaim> assetClaims = assetClaimRepository.findAllByEmployeeId(employeeId);
+            List<RequestedAsset> assetClaims = assetClaimRepository.findAllByEmployeeId(employeeId);
             return assetClaimMapper.convertToResponse(assetClaims);
         } catch (Exception e) {
-            throw new RuntimeException("Error in fetching all claimed assets: " + e.getMessage(), e);
+            throw new RuntimeException("Error in fetching all requested assets: " + e.getMessage(), e);
         }
+    }
+
+    public void copyNonNullProperties(Object src, Object target) {
+        Field[] fields = src.getClass().getDeclaredFields();
+        Field[] var3 = fields;
+        int var4 = fields.length;
+
+        for (int var5 = 0; var5 < var4; ++var5) {
+            Field field = var3[var5];
+            field.setAccessible(true);
+
+            try {
+                Object value = field.get(src);
+                if (value != null) {
+                    field.set(target, value);
+                }
+            } catch (IllegalAccessException var8) {
+                System.out.println("exception while copying the object values");
+            }
+        }
+
     }
 
 }

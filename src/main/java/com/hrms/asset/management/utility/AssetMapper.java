@@ -1,14 +1,15 @@
 package com.hrms.asset.management.utility;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Component;
 
 import com.hrms.asset.management.dao.Asset;
+import com.hrms.asset.management.request.AssetAllocationRequest;
 import com.hrms.asset.management.request.AssetRequest;
+import com.hrms.asset.management.response.AssetAllocationResponse;
+import com.hrms.asset.management.response.AssetReportResponse;
 import com.hrms.asset.management.response.AssetResponse;
+import com.hrms.asset.management.response.AssetReturnResponse;
 
 @Component
 public class AssetMapper {
@@ -16,14 +17,17 @@ public class AssetMapper {
 
     public AssetMapper(ModelMapper modelMapper) {
         this.modelMapper = modelMapper;
-      
+
     }
+
     public Asset convertToEntity(AssetRequest assetRequest) {
-        try {
-            return modelMapper.map(assetRequest, Asset.class);
-        } catch (RuntimeException ex) {
-            throw new RuntimeException("Error in converting AssetRequest to Asset");
-        }
+
+        return modelMapper.map(assetRequest, Asset.class);
+    }
+
+    public Asset convertToEntity(AssetAllocationRequest assetRequest) {
+
+        return modelMapper.map(assetRequest, Asset.class);
     }
     public AssetResponse convertToResponse(Asset asset) {
         try {
@@ -32,11 +36,26 @@ public class AssetMapper {
             throw new RuntimeException("Error in converting AssetRequest to Asset");
         }
     }
-    public List<AssetResponse> convertToResponse(List<Asset> assets) {
+    public AssetAllocationResponse convertToAllocationResponse(Asset asset) {
         try {
-            return assets.stream().map(asset -> modelMapper.map(asset, AssetResponse.class)).collect(Collectors.toList());
+            return modelMapper.map(asset, AssetAllocationResponse.class);
         } catch (RuntimeException ex) {
             throw new RuntimeException("Error in converting AssetRequest to Asset");
         }
     }
+    public AssetReportResponse convertToReportResponse(Asset asset) {
+        try {
+            return modelMapper.map(asset, AssetReportResponse.class);
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Error in converting AssetRequest to Asset");
+        }
+    }
+    public AssetReturnResponse convertToReturnResponse(Asset asset) {
+        try {
+            return modelMapper.map(asset, AssetReturnResponse.class);
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Error in converting AssetRequest to Asset");
+        }
+    }
+
 }
