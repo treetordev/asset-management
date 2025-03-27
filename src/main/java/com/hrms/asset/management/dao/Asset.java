@@ -1,6 +1,8 @@
 package com.hrms.asset.management.dao;
 
 import java.time.LocalDate;
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,9 +29,8 @@ public class Asset {
     private LocalDate reportDate;
     private String reportDescription;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "assigned_employee_id")
-    private Employee assignedEmployee;
+
+    private UUID assignedEmployeeId;
 
     @Column(updatable = false)
     private LocalDate createdAt;

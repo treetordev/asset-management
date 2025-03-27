@@ -1,12 +1,13 @@
 package com.hrms.asset.management.request;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import lombok.Data;
 
 @Data
 public class AssetAllocationRequest {
     
-    private Long employeeId;
+    private UUID employeeId;
     private LocalDate allocationDate;
 }

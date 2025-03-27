@@ -79,12 +79,7 @@ public class AssetService {
         try {
             Asset existingAsset = assetRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
-
-            Employee employee = employeeRepository.findById(assetRequest.getEmployeeId())
-                    .orElseThrow(
-                            () -> new RuntimeException("Employee not found with ID: " + assetRequest.getEmployeeId()));
-
-            existingAsset.setAssignedEmployee(employee);
+            existingAsset.setAssignedEmployeeId(assetRequest.getEmployeeId());
             existingAsset.setStatus("Assigned");
             existingAsset.setAllocationDate(assetRequest.getAllocationDate());
 
@@ -117,7 +112,7 @@ public class AssetService {
         try {
             Asset existingAsset = assetRepository.findById(id)
                     .orElseThrow(() -> new RuntimeException("Asset not found with ID: " + id));
-            existingAsset.setAssignedEmployee(null);
+            existingAsset.setAssignedEmployeeId(null);
             existingAsset.setStatus(assetRequest.getStatus());
             existingAsset.setAllocationDate(null);
             Asset updateAsset = assetRepository.save(existingAsset);
