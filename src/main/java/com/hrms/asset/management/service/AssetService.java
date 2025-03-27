@@ -2,6 +2,7 @@ package com.hrms.asset.management.service;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -192,4 +193,17 @@ public class AssetService {
 
     }
 
+    public List<AssetResponse> getAssetsByEmployee(String employeeId) {
+        try {
+            List<Asset> assets = assetRepository.findByEmployeeId(UUID.fromString(employeeId));
+            List<AssetResponse> responses = new ArrayList<>();
+            for(Asset asset:assets){
+                AssetResponse assetResponse = assetMapper.convertToResponse(asset);
+                responses.add(assetResponse);
+            }
+            return responses;
+        } catch (Exception e) {
+            throw new RuntimeException("Error in fetching all requested assets: " + e.getMessage(), e);
+        }
+    }
 }
