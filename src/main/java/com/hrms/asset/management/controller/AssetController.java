@@ -110,7 +110,6 @@ public class AssetController {
 
     @GetMapping("/employee")
     public ResponseEntity<List<AssetResponse>> getAssetsByEmployee(@RequestParam String employeeId) {
-
         List<AssetResponse> assetRespone = assetService.getAssetsByEmployee(employeeId);
         return ResponseEntity.status(HttpStatus.OK).body(assetRespone);
 

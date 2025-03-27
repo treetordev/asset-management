@@ -13,5 +13,5 @@ import java.util.UUID;
 @Repository
 public interface AssetRepository extends JpaRepository<Asset, Long>, JpaSpecificationExecutor<Asset> {
 
-    List<Asset> findByAllByEmployeeId(UUID uuid);
+    List<Asset> findAllByEmployeeId(UUID uuid);
 }
