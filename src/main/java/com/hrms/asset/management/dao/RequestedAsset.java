@@ -15,9 +15,6 @@ public class RequestedAsset {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private UUID employeeId;
-    @ManyToOne
-    @JoinColumn(name = "asset_id",nullable = false)
-    private Asset asset;
     private String comment;
     private LocalDate date;
     private String reason;
