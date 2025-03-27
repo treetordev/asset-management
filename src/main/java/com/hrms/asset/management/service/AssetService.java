@@ -3,6 +3,7 @@ package com.hrms.asset.management.service;
 import java.lang.reflect.Field;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import lombok.extern.log4j.Log4j2;
@@ -147,10 +148,10 @@ public class AssetService {
 
     }
 
-    public AssetRequestResponse requestAsset(Long employeeId, AssetRequestSubmission assetClaimRequest) {
+    public AssetRequestResponse requestAsset(String employeeId, AssetRequestSubmission assetClaimRequest) {
         try {
             RequestedAsset requestedAsset = assetClaimMapper.convertToEntity(assetClaimRequest);
-            requestedAsset.setEmployeeId(employeeId);
+            requestedAsset.setEmployeeId(UUID.fromString(employeeId));
             requestedAsset.setStatus("Pending");
             requestedAsset.setDate(LocalDate.now());
             assetClaimRepository.save(requestedAsset);

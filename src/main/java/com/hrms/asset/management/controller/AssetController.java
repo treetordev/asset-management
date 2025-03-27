@@ -89,7 +89,7 @@ public class AssetController {
     /* Asset Request */
 
     @PostMapping("/request")
-    public ResponseEntity<AssetRequestResponse> requestAsset(@RequestParam Long employeeId,
+    public ResponseEntity<AssetRequestResponse> requestAsset(@RequestParam String employeeId,
             @Valid @RequestBody AssetRequestSubmission assetRequestSubmission) {
 
         AssetRequestResponse assetRespone = assetService.requestAsset(employeeId, assetRequestSubmission);

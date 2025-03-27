@@ -1,6 +1,8 @@
 package com.hrms.asset.management.dao;
 
 import java.time.LocalDate;
+import java.util.UUID;
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -12,7 +14,7 @@ public class RequestedAsset {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-    private Long employeeId;
+    private UUID employeeId;
     @ManyToOne
     @JoinColumn(name = "asset_id",nullable = false)
     private Asset asset;
