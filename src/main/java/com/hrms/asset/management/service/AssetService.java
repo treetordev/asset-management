@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
@@ -29,6 +30,7 @@ import com.hrms.asset.management.utility.AssetMapper;
 import com.hrms.asset.management.utility.AssetRequestMapper;
 
 @Service
+@Log4j2
 public class AssetService {
 
     @Autowired
@@ -82,6 +84,7 @@ public class AssetService {
             existingAsset.setAssignedEmployeeId(assetRequest.getEmployeeId());
             existingAsset.setStatus("Assigned");
             existingAsset.setAllocationDate(assetRequest.getAllocationDate());
+            log.info("entity filled with data");
 
             Asset updateAsset = assetRepository.save(existingAsset);
             return assetMapper.convertToAllocationResponse(updateAsset);

@@ -1,6 +1,7 @@
 package com.hrms.asset.management.response;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 import com.hrms.asset.management.dao.Employee;
 
@@ -17,7 +18,7 @@ public class AssetAllocationResponse {
     private String serialNumber;
     private LocalDate retirementDate;
     private LocalDate allocationDate;
-    private Employee assignedEmployeeId;
+    private UUID assignedEmployeeId;
     private LocalDate createdAt;
     private LocalDate updatedAt;
 }
