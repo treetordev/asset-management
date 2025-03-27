@@ -195,7 +195,7 @@ public class AssetService {
 
     public List<AssetResponse> getAssetsByEmployee(String employeeId) {
         try {
-            List<Asset> assets = assetRepository.findByEmployeeId(UUID.fromString(employeeId));
+            List<Asset> assets = assetRepository.findByAllByEmployeeId(UUID.fromString(employeeId));
             List<AssetResponse> responses = new ArrayList<>();
             for(Asset asset:assets){
                 AssetResponse assetResponse = assetMapper.convertToResponse(asset);

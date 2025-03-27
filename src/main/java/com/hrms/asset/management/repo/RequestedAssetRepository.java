@@ -12,6 +12,6 @@ import com.hrms.asset.management.dao.RequestedAsset;
 @Repository
 public interface RequestedAssetRepository extends JpaRepository<RequestedAsset, Long> {
 
-    List<AssetResponse> findAllByEmployeeId(UUID employeeId);
+    List<RequestedAsset> findAllByEmployeeId(UUID employeeId);
  
 }
