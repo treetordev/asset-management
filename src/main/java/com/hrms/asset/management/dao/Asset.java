@@ -32,6 +32,7 @@ public class Asset {
 
     private UUID assignedEmployeeId;
 
+
     @Column(updatable = false)
     private LocalDate createdAt;
     private LocalDate updatedAt;
