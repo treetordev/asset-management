@@ -162,9 +162,9 @@ public class AssetService {
     }
 
     // Assigned and Unassigned field we have to add there to fetch data
-    public List<AssetRequestResponse> getAllRequestedAsset(Long employeeId) {
+    public List<AssetRequestResponse> getAllRequestedAsset(String employeeId) {
         try {
-            List<RequestedAsset> assetClaims = assetClaimRepository.findAllByEmployeeId(employeeId);
+            List<RequestedAsset> assetClaims = assetClaimRepository.findAllByEmployeeId(UUID.fromString(employeeId));
             return assetClaimMapper.convertToResponse(assetClaims);
         } catch (Exception e) {
             throw new RuntimeException("Error in fetching all requested assets: " + e.getMessage(), e);

@@ -1,6 +1,7 @@
 package com.hrms.asset.management.controller;
 
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -98,7 +99,7 @@ public class AssetController {
     }
 
     @GetMapping("/request")
-    public ResponseEntity<List<AssetRequestResponse>> getAllRequestedAsset(@RequestParam Long employeeId) {
+    public ResponseEntity<List<AssetRequestResponse>> getAllRequestedAsset(@RequestParam String employeeId) {
 
         List<AssetRequestResponse> assetResponse = assetService.getAllRequestedAsset(employeeId);
         if (assetResponse != null) {
