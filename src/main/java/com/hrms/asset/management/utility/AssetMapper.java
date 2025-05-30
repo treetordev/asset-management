@@ -10,6 +10,7 @@ import com.hrms.asset.management.response.AssetAllocationResponse;
 import com.hrms.asset.management.response.AssetReportResponse;
 import com.hrms.asset.management.response.AssetResponse;
 import com.hrms.asset.management.response.AssetReturnResponse;
+import com.hrms.asset.management.response.EmployeeDto;
 
 @Component
 public class AssetMapper {
@@ -36,9 +37,28 @@ public class AssetMapper {
             throw new RuntimeException("Error in converting AssetRequest to Asset");
         }
     }
+    public AssetResponse convertToResponse(Asset asset, EmployeeDto employeeDto) {
+        try {
+            AssetResponse assetResponse = modelMapper.map(asset, AssetResponse.class);
+            assetResponse.setEmployee(employeeDto);
+            return assetResponse;
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Error in converting AssetRequest to Asset");
+        }
+    }
+
     public AssetAllocationResponse convertToAllocationResponse(Asset asset) {
         try {
             return modelMapper.map(asset, AssetAllocationResponse.class);
+        } catch (RuntimeException ex) {
+            throw new RuntimeException("Error in converting AssetRequest to Asset");
+        }
+    }
+    public AssetAllocationResponse convertToAllocationResponse(Asset asset, EmployeeDto employeeDto) {
+        try {
+            AssetAllocationResponse assetAllocationResponse = modelMapper.map(asset, AssetAllocationResponse.class);
+            assetAllocationResponse.setAssignedEmployee(employeeDto);
+            return assetAllocationResponse;
         } catch (RuntimeException ex) {
             throw new RuntimeException("Error in converting AssetRequest to Asset");
         }
@@ -57,5 +77,7 @@ public class AssetMapper {
             throw new RuntimeException("Error in converting AssetRequest to Asset");
         }
     }
+
+
 
 }

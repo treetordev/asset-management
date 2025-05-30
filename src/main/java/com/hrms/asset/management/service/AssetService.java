@@ -2,21 +2,23 @@ package com.hrms.asset.management.service;
 
 import java.lang.reflect.Field;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpMethod;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestTemplate;
 
 import com.hrms.asset.management.dao.Asset;
-import com.hrms.asset.management.dao.Employee;
 import com.hrms.asset.management.dao.RequestedAsset;
 import com.hrms.asset.management.repo.AssetRepository;
-import com.hrms.asset.management.repo.EmployeeRepository;
 import com.hrms.asset.management.repo.RequestedAssetRepository;
 import com.hrms.asset.management.request.AssetAllocationRequest;
 import com.hrms.asset.management.request.AssetReportRequest;
@@ -28,8 +30,12 @@ import com.hrms.asset.management.response.AssetReportResponse;
 import com.hrms.asset.management.response.AssetRequestResponse;
 import com.hrms.asset.management.response.AssetResponse;
 import com.hrms.asset.management.response.AssetReturnResponse;
+import com.hrms.asset.management.response.EmployeeDto;
 import com.hrms.asset.management.utility.AssetMapper;
 import com.hrms.asset.management.utility.AssetRequestMapper;
+import com.hrms.asset.management.utility.TenantContext;
+
+import lombok.extern.log4j.Log4j2;
 
 @Service
 @Log4j2
@@ -42,13 +48,16 @@ public class AssetService {
     private RequestedAssetRepository assetClaimRepository;
 
     @Autowired
-    private EmployeeRepository employeeRepository;
-
-    @Autowired
     private AssetMapper assetMapper;
 
     @Autowired
     private AssetRequestMapper assetClaimMapper;
+
+    @Autowired
+    private RestTemplate restTemplate;
+    
+    @Value("${employee.service.url}")
+    private String baseURL;
 
     public AssetResponse addAsset(AssetRequest assetRequest) {
 
@@ -89,7 +98,8 @@ public class AssetService {
             log.info("entity filled with data");
 
             Asset updateAsset = assetRepository.save(existingAsset);
-            return assetMapper.convertToAllocationResponse(updateAsset);
+            EmployeeDto employeeDto = getEmployeeById(assetRequest.getEmployeeId().toString());
+            return assetMapper.convertToAllocationResponse(updateAsset,employeeDto);
         } catch (Exception e) {
             throw new RuntimeException("Error in saving asset: " + e.getMessage(), e);
         }
@@ -156,7 +166,8 @@ public class AssetService {
             requestedAsset.setStatus("Pending");
             requestedAsset.setDate(LocalDate.now());
             assetClaimRepository.save(requestedAsset);
-            return assetClaimMapper.convertToResponse(requestedAsset);
+            EmployeeDto employeeDto=getEmployeeById(employeeId);
+            return assetClaimMapper.convertToResponse(requestedAsset,employeeDto);
         } catch (Exception e) {
             throw new RuntimeException("Error in saving asset request: " + e.getMessage(), e);
         }
@@ -165,8 +176,12 @@ public class AssetService {
     // Assigned and Unassigned field we have to add there to fetch data
     public List<AssetRequestResponse> getAllRequestedAsset(String employeeId) {
         try {
+            EmployeeDto employeeDto=getEmployeeById(employeeId);
+            if (employeeDto == null) {
+                throw new RuntimeException("Employee not found with ID: " + employeeId);
+            }
             List<RequestedAsset> assetClaims = assetClaimRepository.findAllByEmployeeId(UUID.fromString(employeeId));
-            return assetClaimMapper.convertToResponse(assetClaims);
+            return assetClaimMapper.convertToResponseWithEmployee(assetClaims,employeeDto);
         } catch (Exception e) {
             throw new RuntimeException("Error in fetching all requested assets: " + e.getMessage(), e);
         }
@@ -195,15 +210,40 @@ public class AssetService {
 
     public List<AssetResponse> getAssetsByEmployee(String employeeId) {
         try {
-            List<Asset> assets = assetRepository.findAllByAssignedEmployeeId(UUID.fromString(employeeId));
-            List<AssetResponse> responses = new ArrayList<>();
-            for(Asset asset:assets){
-                AssetResponse assetResponse = assetMapper.convertToResponse(asset);
-                responses.add(assetResponse);
+            EmployeeDto employeeDto= getEmployeeById(employeeId);
+            if (employeeDto == null) {
+                throw new RuntimeException("Employee not found with ID: " + employeeId);
             }
+            List<Asset> assets = assetRepository.findAllByAssignedEmployeeId(UUID.fromString(employeeId));
+            List<AssetResponse> responses = assets.stream()
+                    .map(asset -> assetMapper.convertToResponse(asset, employeeDto))
+                    .collect(Collectors.toList());
+                    
             return responses;
         } catch (Exception e) {
             throw new RuntimeException("Error in fetching all requested assets: " + e.getMessage(), e);
         }
+    }
+
+    public EmployeeDto getEmployeeById(String userId) {
+        String url = baseURL + "/employee/";
+     
+        // Set headers
+        HttpHeaders headers = new HttpHeaders();
+        headers.set("X-Tenant-Id", "tomato");
+
+        // Create the request entity
+        HttpEntity<String> entity = new HttpEntity<>(headers);
+
+        // Make the HTTP GET request with headers
+        ResponseEntity<EmployeeDto> response = restTemplate.exchange(
+                url + userId,
+                HttpMethod.GET,
+                entity,
+                EmployeeDto.class
+        );
+
+ 
+        return response.getBody();
     }
 }

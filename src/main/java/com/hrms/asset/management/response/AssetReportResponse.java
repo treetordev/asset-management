@@ -2,7 +2,6 @@ package com.hrms.asset.management.response;
 
 import java.time.LocalDate;
 
-import com.hrms.asset.management.dao.Employee;
 
 import lombok.Data;
 
@@ -19,7 +18,7 @@ public class AssetReportResponse {
     private LocalDate allocationDate;
     private LocalDate reportingDate;
     private String reportingDescription;
-    private Employee assignedEmployeeId;
+    private EmployeeDto assignedEmployeeId;
     private LocalDate createdAt;
     private LocalDate updatedAt;
 }
