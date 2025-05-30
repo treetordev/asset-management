@@ -7,7 +7,6 @@ import lombok.Data;
 
 @Data
 public class AssetAllocationRequest {
-    
     private UUID employeeId;
     private LocalDate allocationDate;
 }
