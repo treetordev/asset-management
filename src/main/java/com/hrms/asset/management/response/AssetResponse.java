@@ -2,7 +2,6 @@ package com.hrms.asset.management.response;
 
 import java.time.LocalDate;
 
-import com.hrms.asset.management.dao.Employee;
 
 import lombok.Data;
 
@@ -15,6 +14,7 @@ public class AssetResponse {
     private String type;
     private String status;
     private String serialNumber;
+    private EmployeeDto employee;
     private LocalDate retirementDate;
     private Boolean isActive;
     private LocalDate createdAt;

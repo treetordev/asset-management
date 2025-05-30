@@ -11,7 +11,7 @@ import lombok.Data;
 public class AssetRequestResponse {
 
     private Long id;
-    private UUID employeeId;
+    private EmployeeDto employeeDto;
     private Asset asset;
     private String comment;
     private LocalDate date;
