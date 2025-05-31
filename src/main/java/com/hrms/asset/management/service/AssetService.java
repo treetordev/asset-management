@@ -230,7 +230,7 @@ public class AssetService {
      
         // Set headers
         HttpHeaders headers = new HttpHeaders();
-        headers.set("X-Tenant-Id", "tomato");
+        headers.set("X-Tenant-Id", TenantContext.getCurrentTenant());
 
         // Create the request entity
         HttpEntity<String> entity = new HttpEntity<>(headers);
